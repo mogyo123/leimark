@@ -1,7 +1,55 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
+import RPi.GPIO as GPIO
+import time
 import cv2
+
+# Set up GPIO pins for relays
+relays = {
+    "Apple": 5,
+    "Orange": 6,
+    "Banana": 13,
+    "Grapes": 19,
+    "Pineapple": 26
+}
+
+GPIO.setmode(GPIO.BCM)
+for pin in relays.values():
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, GPIO.HIGH)
+
+def activate_relay(pin):
+    GPIO.output(pin, GPIO.LOW)  # Turn on the relay
+    time.sleep(5)  # Relay stays on for 5 seconds
+    GPIO.output(pin, GPIO.HIGH)  # Turn off the relay
+
+def show_processing(choice):
+    processing_label = tk.Label(root, text="Processing...", font=('Helvetica', 24))
+    processing_label.pack(pady=20)
+
+    root.update_idletasks()
+
+    # Activate the relay associated with the choice
+    activate_relay(relays[choice])
+
+    # Processing done
+    time.sleep(2)
+
+    # Remove processing label
+    processing_label.destroy()
+
+    # Return to advertisement
+    show_ad()
+
+def confirm_choice(choice):
+    result = messagebox.askyesno("Confirm", f"Are you sure you want to select {choice}?")
+    if result:
+        for widget in root.winfo_children():
+            widget.destroy()
+        show_processing(choice)
+    else:
+        show_ad()
 
 class VideoPlayer:
     def __init__(self, root, video_path):
@@ -60,23 +108,23 @@ def show_choices(video_player):
     choice4_imgtk = ImageTk.PhotoImage(choice4_img)
     choice5_imgtk = ImageTk.PhotoImage(choice5_img)
 
-    choice1 = tk.Button(choices_canvas, image=choice1_imgtk, command=lambda: choice_selected("Choice 1"))
+    choice1 = tk.Button(choices_canvas, image=choice1_imgtk, command=lambda: confirm_choice("Apple"))
     choice1.image = choice1_imgtk
     choices_canvas.create_window(100, 400, window=choice1)
 
-    choice2 = tk.Button(choices_canvas, image=choice2_imgtk, command=lambda: choice_selected("Choice 2"))
+    choice2 = tk.Button(choices_canvas, image=choice2_imgtk, command=lambda: confirm_choice("Orange"))
     choice2.image = choice2_imgtk
     choices_canvas.create_window(350, 400, window=choice2)
 
-    choice3 = tk.Button(choices_canvas, image=choice3_imgtk, command=lambda: choice_selected("Choice 3"))
+    choice3 = tk.Button(choices_canvas, image=choice3_imgtk, command=lambda: confirm_choice("Banana"))
     choice3.image = choice3_imgtk
     choices_canvas.create_window(600, 400, window=choice3)
 
-    choice4 = tk.Button(choices_canvas, image=choice4_imgtk, command=lambda: choice_selected("Choice 4"))
+    choice4 = tk.Button(choices_canvas, image=choice4_imgtk, command=lambda: confirm_choice("Grapes"))
     choice4.image = choice4_imgtk
     choices_canvas.create_window(850, 400, window=choice4)
 
-    choice5 = tk.Button(choices_canvas, image=choice5_imgtk, command=lambda: choice_selected("Choice 5"))
+    choice5 = tk.Button(choices_canvas, image=choice5_imgtk, command=lambda: confirm_choice("Pineapple"))
     choice5.image = choice5_imgtk
     choices_canvas.create_window(1100, 400, window=choice5)
 
@@ -86,16 +134,6 @@ def show_choices(video_player):
     choices_canvas.create_text(600, 500, text="Banana", font=('Helvetica', 16), anchor=tk.N)
     choices_canvas.create_text(850, 500, text="Grapes", font=('Helvetica', 16), anchor=tk.N)
     choices_canvas.create_text(1100, 500, text="Pineapple", font=('Helvetica', 16), anchor=tk.N)
-
-def choice_selected(choice):
-    for widget in root.winfo_children():
-        widget.destroy()
-
-    label = tk.Label(root, text=f"You selected {choice}", font=('Helvetica', 16))
-    label.pack(pady=20)
-
-    back_button = tk.Button(root, text="Back to Ad", width=20, height=2, command=show_ad)
-    back_button.pack(pady=10)
 
 def show_ad():
     for widget in root.winfo_children():
