@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import RPi.GPIO as GPIO
 import time
 import cv2
+import mysql.connector
 
 # Set up GPIO pins for relays
 relays = {
@@ -24,20 +25,76 @@ def activate_relay(pin):
     time.sleep(5)  # Relay stays on for 5 seconds
     GPIO.output(pin, GPIO.HIGH)  # Turn off the relay
 
+def log_order_to_database(choice):
+    """Logs the selected order into the MySQL database"""
+    try:
+        # Connect to the MySQL database
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='lei_mark_cruz',
+            password='rasp',
+            database='lei_mark_cruz'
+        )
+        cursor = connection.cursor()
+
+        # Insert the selected order into the 'orders' table
+        query = "INSERT INTO orders (choice, quantity) VALUES (%s, %s)"
+        cursor.execute(query, (choice, 1))  # Set quantity to 1 for each order
+
+        # Commit the transaction to save the data
+        connection.commit()
+
+        print(f"{choice} logged to database")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 def show_processing(choice):
-    processing_label = tk.Label(root, text="Processing...", font=('Helvetica', 24))
-    processing_label.pack(pady=20)
+    # Create a new frame for processing in the front middle
+    processing_frame = tk.Frame(root)
+    processing_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+    # Add the "Processing..." label
+    processing_label = tk.Label(processing_frame, text="Processing...", font=('Helvetica', 24))
+    processing_label.pack(pady=10)
+
+    # Add a progress bar
+    progress_bar = ttk.Progressbar(processing_frame, orient="horizontal", length=300, mode="determinate")
+    progress_bar.pack(pady=20)
 
     root.update_idletasks()
+
+    # Simulate processing with progress bar
+    for i in range(100):
+        progress_bar['value'] = i + 1
+        root.update_idletasks()
+        time.sleep(0.05)  # Simulating time delay for progress
 
     # Activate the relay associated with the choice
     activate_relay(relays[choice])
 
-    # Processing done
-    time.sleep(2)
+    # Log the order to the database
+    log_order_to_database(choice)
 
-    # Remove processing label
+    # Remove processing elements
     processing_label.destroy()
+    progress_bar.destroy()
+
+    # Add the "Thank You" message
+    thank_you_label = tk.Label(processing_frame, text="Thank You!", font=('Helvetica', 36))
+    thank_you_label.pack(pady=20)
+
+    root.update_idletasks()
+    time.sleep(3)  # Display "Thank You" for 3 seconds
+
+    # Remove "Thank You" message and frame
+    thank_you_label.destroy()
+    processing_frame.destroy()
 
     # Return to advertisement
     show_ad()
