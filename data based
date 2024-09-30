@@ -1,0 +1,26 @@
+TO LOG IN INTO MYSQL/ MARIADB
+
+GO TO TERMINAL
+
+INPUT THE KEYWORD
+
+mysql -u lei_mark_cruz 
+
+password: rasp
+
+"NOW YOU ACCESS THE DATABASE"
+
+USE lei_mark_cruz
+
+SELECT * FROM orders
+
+NOW THE DATABASE IS APPEAR
+
+TO DELETE HISTORY USE
+
+DELETE FROM orders; 
+
+or if you delete single row use
+
+DELETE FROM orders WHERE choice = 'Apple';
+
