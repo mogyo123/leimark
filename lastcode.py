@@ -3,9 +3,9 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import RPi.GPIO as GPIO
 import time
+import cv2
 import mysql.connector
 import threading
-import cv2  # Importing OpenCV
 
 # Set up GPIO pins for relays and servo
 relays = {
@@ -100,10 +100,7 @@ class VideoPlayer:
     def __init__(self, root, video_path):
         self.root = root
         self.video_path = video_path
-        self.cap = cv2.VideoCapture(self.video_path)  # Open video using OpenCV
-        if not self.cap.isOpened():
-            print("Error: Unable to open video file.")
-            return  # Exit if video cannot be opened
+        self.cap = cv2.VideoCapture(self.video_path)
         self.label = ttk.Label(root)
         self.label.pack(fill=tk.BOTH, expand=True)
         self.video_playing = True
@@ -142,7 +139,7 @@ def show_choices(video_player):
     choices_canvas.create_image(0, 0, anchor=tk.NW, image=bg_image_tk)
     choices_canvas.image = bg_image_tk  # Keep a reference to avoid garbage collection
     
-    # Load and resize images for buttons
+    # Load and resize images for buttons to 150x150
     choice1_img = Image.open("choice1.png").resize((150, 150), Image.LANCZOS)
     choice2_img = Image.open("choice2.png").resize((150, 150), Image.LANCZOS)
     choice3_img = Image.open("choice3.png").resize((150, 150), Image.LANCZOS)
@@ -155,32 +152,34 @@ def show_choices(video_player):
     choice4_imgtk = ImageTk.PhotoImage(choice4_img)
     choice5_imgtk = ImageTk.PhotoImage(choice5_img)
 
-    choice1 = tk.Button(choices_canvas, image=choice1_imgtk, command=lambda: confirm_choice("Apple"))
-    choice1.image = choice1_imgtk
-    choices_canvas.create_window(100, 400, window=choice1)
+    # Adjusted positions for horizontal layout (centered and with 1 space between each button)
+    button_width = 170
+    button_spacing = 2  # Space between each button
+    total_width = (button_width * 5) + (button_spacing * 4)
+    start_x = (root.winfo_width() - total_width) // 2  # Start position to center buttons
 
-    choice2 = tk.Button(choices_canvas, image=choice2_imgtk, command=lambda: confirm_choice("Orange"))
-    choice2.image = choice2_imgtk
-    choices_canvas.create_window(350, 400, window=choice2)
-
-    choice3 = tk.Button(choices_canvas, image=choice3_imgtk, command=lambda: confirm_choice("Banana"))
-    choice3.image = choice3_imgtk
-    choices_canvas.create_window(600, 400, window=choice3)
-
-    choice4 = tk.Button(choices_canvas, image=choice4_imgtk, command=lambda: confirm_choice("Grapes"))
-    choice4.image = choice4_imgtk
-    choices_canvas.create_window(850, 400, window=choice4)
-
-    choice5 = tk.Button(choices_canvas, image=choice5_imgtk, command=lambda: confirm_choice("Pineapple"))
-    choice5.image = choice5_imgtk
-    choices_canvas.create_window(1100, 400, window=choice5)
-
-    # Add labels for each choice
-    choices_canvas.create_text(100, 500, text="Apple", font=('Helvetica', 16), anchor=tk.N)
-    choices_canvas.create_text(350, 500, text="Orange", font=('Helvetica', 16), anchor=tk.N)
-    choices_canvas.create_text(600, 500, text="Banana", font=('Helvetica', 16), anchor=tk.N)
-    choices_canvas.create_text(850, 500, text="Grapes", font=('Helvetica', 16), anchor=tk.N)
-    choices_canvas.create_text(1100, 500, text="Pineapple", font=('Helvetica', 16), anchor=tk.N)
+    button_positions = [
+        start_x, 
+        start_x + button_width + button_spacing,
+        start_x + 2 * (button_width + button_spacing),
+        start_x + 3 * (button_width + button_spacing),
+        start_x + 4 * (button_width + button_spacing)
+    ]
+    
+    fruit_names = ["Apple", "Grapes", "Pineapple", "Banana", "Orange"]
+    
+    # Create the choices (Apple, Orange, Banana, Grapes, Pineapple)
+    for i in range(5):
+        choice_imgtk = eval(f"choice{i+1}_imgtk")
+        fruit_name = fruit_names[i]
+        
+        # Create buttons for each fruit choice
+        choice_button = tk.Button(choices_canvas, image=choice_imgtk, command=lambda fruit=fruit_name: confirm_choice(fruit))
+        choice_button.image = choice_imgtk
+        choices_canvas.create_window(button_positions[i], 300, window=choice_button)
+        
+        # Add text labels for each choice
+        choices_canvas.create_text(button_positions[i], 380, text=fruit_name, font=('Georgia', 16), anchor=tk.N)
 
 def show_ad():
     for widget in root.winfo_children():
