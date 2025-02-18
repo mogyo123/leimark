@@ -223,6 +223,32 @@ def show_choices(video_player):
 def show_ad():
     for widget in root.winfo_children():
         widget.destroy()
+  video_player = VideoPlayer(root, "ad_video.mp4")
+
+    root.bind("<Button-1>", lambda e: show_choices(video_player))
+
+def toggle_fullscreen(event=None):
+    root.attributes('-fullscreen', True)
+
+def end_fullscreen(event=None):
+    root.attributes('-fullscreen', False)
+
+# Create the main window
+root = tk.Tk()
+root.title("Advertisement GUI")
+
+# Bind F11 to toggle fullscreen
+root.bind("<F11>", toggle_fullscreen)
+root.bind("<Escape>", end_fullscreen)
+
+# Start in fullscreen mode
+root.attributes('-fullscreen', True)
+
+# Show the initial advertisement
+show_ad()
+
+# Run the GUI loop
+root.mainloop()
 
     # Start the sound in a separate thread so it plays while the video runs
     sound_thread = threading.Thread(target=play_ad_sound)
