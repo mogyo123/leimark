@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import RPi.GPIO as GPIO
 import time
+from playsound import playsound
 import cv2
 import mysql.connector
 import threading
@@ -23,6 +24,10 @@ servo_channel_1 = 6
 servo_channel_2 = 7
 servo_channel_3 = 8
 servo_channel_4 = 0
+servo_channel_5 = 1
+servo_channel_6 = 2
+servo_channel_7 = 3
+servo_channel_8 = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 for pin in relays.values():
@@ -34,7 +39,10 @@ def activate_relay(pin):
     time.sleep(2)
     GPIO.output(pin, GPIO.HIGH)
     print("Relay on")
- 
+
+def play_sound(file):
+    threading.Thread(target=playsound, args=(file,), daemon=True).start()
+
 def smooth_move(servo, start, end, step=1, delay=0.05):
     """Move servo smoothly from start to end with controlled speed."""
     if start < end:
@@ -49,35 +57,47 @@ def smooth_move(servo, start, end, step=1, delay=0.05):
 def pca1_action():
     print("PCA1 activated")
     smooth_move(kit.servo[servo_channel], 180, 130, step=1, delay=00.01)
-    smooth_move(kit.servo[servo_channel_4], 0, 60, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_4], 0, 100, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_1], 180, 50, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 0, 110, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel], 130, 80, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_5], 0, 60, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 110, 70, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_4], 100, 65, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_6], 0, 85, step=1, delay=00.01)
+    play_sound("1.mp3")
     time.sleep(1)
 def pca2_action():
     print("PCA2 activated")
+  #  smooth_move(kit.servo[servo_channel_4], 80, 70, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 70, 110, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel], 80, 130, step=1, delay=00.01)
-    smooth_move(kit.servo[servo_channel_3], 0, 140, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_3], 0, 130, step=1, delay=00.01)
     time.sleep(1)
 
 def pca3_action():
     print("PCA3 activated")
     time.sleep(3)
-    smooth_move(kit.servo[servo_channel_3], 140, 0, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_3], 130, 0, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel], 130, 80, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 110, 45, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_4], 65, 100, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_8], 100, 50, step=1, delay=00.01)
+    play_sound("2.mp3")
     time.sleep(2)
 
 def pca4_action():
     print("PCA4 activated")
    # smooth_move(kit.servo[servo_channel], 90, 0, step=1, delay=0.1)
+    smooth_move(kit.servo[servo_channel_8], 50, 100, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_5], 60, 0, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 45, 110, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_1], 50, 180, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel_2], 110, 0, step=1, delay=00.01)
     smooth_move(kit.servo[servo_channel], 80, 180, step=1, delay=00.01)
-    smooth_move(kit.servo[servo_channel_4], 60, 0, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_6], 85, 0, step=1, delay=00.01)
+    smooth_move(kit.servo[servo_channel_4], 100, 0, step=1, delay=00.01)
+    play_sound("3.mp3")
     time.sleep(2)
 
 def log_order_to_database(choice):
